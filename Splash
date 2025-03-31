@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#ifdef _WIN32
+    #define CLEAR "cls"
+#else
+    #define CLEAR "clear"
+#endif
+
+void display_splash_screen(const char *name, const char *date) {
+    system(CLEAR);  // Clear screen before displaying splash
+    printf("\n************************************************\n");
+    printf(" Magrathea, where a shining planet is created in\n");
+    printf(" a wasteland with no grass, a place where unseen\n");
+    printf(" potential is discovered and gems are polished\n");
+    printf(" by the hands of experts. Welcome to Magrathea.\n");
+    printf("\n [Date]: %s\n", date);
+    printf(" [User]: %s\n", name);
+    printf("************************************************\n");
+}
+
+void display_bonus_triangles(int size) {
+    printf("\n");
+    for (int i = 1; i <= size; i++) {
+        for (int j = 1; j <= i; j++) {
+            printf("*");
+        }
+        printf("\t");
+        for (int j = i; j <= size; j++) {
+            printf("*");
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    char name[50], date[11];
+    
+    printf("Please enter the current date in 'yyyy-mm-dd' format: ");
+    scanf("%10s", date);
+    
+    printf("Please enter your name: ");
+    scanf("%49s", name);
+    
+    printf("**The input has been processed successfully**\n");
+    
+    sleep(3); // Wait for 3 seconds before clearing the screen
+    display_splash_screen(name, date);
+    
+    // Bonus feature: Display right-angled triangles
+    display_bonus_triangles(5);
+    
+    return 0;
+}
