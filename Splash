@@ -20,20 +20,6 @@ void display_splash_screen(const char *name, const char *date) {
     printf("************************************************\n");
 }
 
-void display_bonus_triangles(int size) {
-    printf("\n");
-    for (int i = 1; i <= size; i++) {
-        for (int j = 1; j <= i; j++) {
-            printf("*");
-        }
-        printf("\t");
-        for (int j = i; j <= size; j++) {
-            printf("*");
-        }
-        printf("\n");
-    }
-}
-
 int main() {
     char name[50], date[11];
     
@@ -47,9 +33,6 @@ int main() {
     
     sleep(3); // Wait for 3 seconds before clearing the screen
     display_splash_screen(name, date);
-    
-    // Bonus feature: Display right-angled triangles
-    display_bonus_triangles(5);
     
     return 0;
 }
