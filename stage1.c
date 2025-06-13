@@ -1,27 +1,31 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
+// Global variable to persist training results
+char trainingResults[8] = {'-', '-', '-', '-', '-', '-', '-', '-'};
 
 // Function declarations
 void auditionManagement();
 void training();
 void debut();
 
-void trainingStage(int stageIndex, char trainingResults[]);
-int isTrainingUnlocked(int stageIndex, char trainingResults[]);
-int hasPassed(int stageIndex, char trainingResults[]);
+void trainingStage(int stageIndex);
+int isTrainingUnlocked(int stageIndex);
+int hasPassed(int stageIndex);
+int isNumeric(const char *s);
 
 int main() {
     char choice[10];
 
     while (1) {
-        printf("\n=== Magrathea Main Menu ===\n");
+        printf("=====================\n");
         printf("I. Audition Management\n");
         printf("II. Training\n");
         printf("III. Debut\n");
-        printf("Enter your choice (I/II/III) or 0/Q/q to quit: ");
+        printf("=====================\n");
+        printf("Select a menu option (Exit: Empty input, 0, Q, q): ");
         fgets(choice, sizeof(choice), stdin);
-
-        // Trim newline character
         choice[strcspn(choice, "\n")] = 0;
 
         if (strcmp(choice, "0") == 0 || strcmp(choice, "Q") == 0 || strcmp(choice, "q") == 0 || strlen(choice) == 0) {
@@ -41,24 +45,23 @@ int main() {
     return 0;
 }
 
-// Audition Management placeholder
 void auditionManagement() {
     printf("\n[Audition Management selected.]\n");
 }
 
-// Debut placeholder
 void debut() {
     printf("\n[Debut selected.]\n");
 }
 
-// Training menu
 void training() {
-    char trainingResults[8] = {'-', '-', '-', '-', '-', '-', '-', '-'};
     char input[10];
     int stage;
 
     while (1) {
-        printf("\n=== Training Menu ===\n");
+        printf("####################\n");
+        printf(" Training Management\n");
+        printf("####################\n");
+
         for (int i = 0; i < 8; i++) {
             printf("%d. ", i + 1);
             switch(i) {
@@ -74,26 +77,32 @@ void training() {
             printf(" [%c]\n", trainingResults[i]);
         }
 
-        printf("Enter stage number to evaluate (1-8), or 0/Q/q to return to Main Menu: ");
+        printf("--------------------\n");
+        printf("Select a training menu (Go to main menu: m, M): ");
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = 0;
 
-        if (strcmp(input, "0") == 0 || strcmp(input, "Q") == 0 || strcmp(input, "q") == 0 || strlen(input) == 0) {
+        if (strcmp(input, "0") == 0 || strcmp(input, "Q") == 0 || strcmp(input, "q") == 0 || strlen(input) == 0 ||
+            strcmp(input, "m") == 0 || strcmp(input, "M") == 0) {
             printf("Returning to Main Menu...\n");
             break;
         }
 
+        if (!isNumeric(input)) {
+            printf("Invalid input. Please enter a number.\n");
+            continue;
+        }
+
         stage = atoi(input);
         if (stage >= 1 && stage <= 8) {
-            trainingStage(stage - 1, trainingResults);
+            trainingStage(stage - 1);
         } else {
             printf("Invalid stage. Try again.\n");
         }
     }
 }
 
-// Handles evaluation for one training stage
-void trainingStage(int stageIndex, char trainingResults[]) {
+void trainingStage(int stageIndex) {
     char response[10];
 
     if (trainingResults[stageIndex] != '-') {
@@ -101,11 +110,16 @@ void trainingStage(int stageIndex, char trainingResults[]) {
         return;
     }
 
-    if (!isTrainingUnlocked(stageIndex, trainingResults)) {
-        printf("You must pass Stages 1 and 2 before accessing this stage.\n");
+    if (!isTrainingUnlocked(stageIndex)) {
+        if (!hasPassed(0)) {
+            printf("*** You cannot select this option because you have not completed stage 1. ***\n");
+        } else if (!hasPassed(1)) {
+            printf("*** You cannot select this option because you have not completed stages 1 and 2. ***\n");
+        }
         return;
     }
 
+    printf("+++++++++++++++++++++++++++++++++++++++++++++++++\n");
     printf("Would you like to enter the evaluation result? (Y/N): ");
     fgets(response, sizeof(response), stdin);
     response[strcspn(response, "\n")] = 0;
@@ -125,15 +139,22 @@ void trainingStage(int stageIndex, char trainingResults[]) {
     } else {
         printf("Returning to Training Menu.\n");
     }
+    printf("+++++++++++++++++++++++++++++++++++++++++++++++++\n");
 }
 
-// Returns 1 if stage is allowed to be taken
-int isTrainingUnlocked(int stageIndex, char trainingResults[]) {
+int isTrainingUnlocked(int stageIndex) {
     if (stageIndex < 2) return 1;
-    return hasPassed(0, trainingResults) && hasPassed(1, trainingResults);
+    return hasPassed(0) && hasPassed(1);
 }
 
-// Checks if the stage has been passed
-int hasPassed(int stageIndex, char trainingResults[]) {
+int hasPassed(int stageIndex) {
     return trainingResults[stageIndex] == 'P';
+}
+
+int isNumeric(const char *s) {
+    if (*s == '\0') return 0;
+    for (int i = 0; s[i]; i++) {
+        if (s[i] < '0' || s[i] > '9') return 0;
+    }
+    return 1;
 }
