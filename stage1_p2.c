@@ -54,7 +54,7 @@ int main() {
         fgets(choice, sizeof(choice), stdin);
         choice[strcspn(choice, "\n")] = 0;
 
-        if (strcmp(choice, "0") == 0 || strcmp(choice, "Q") == 0 || strcmp(choice, "q") == 0 || strlen(choice) == 0) {
+        if (strcmp(choice, "0") == 0 || strcasecmp(choice, "q") == 0 || strlen(choice) == 0) {
             printf("Exiting the program...\n");
             break;
         } else if (strcmp(choice, "I") == 0) {
@@ -87,7 +87,7 @@ void training() {
         printf("\n=== Training Menu ===\n");
         for (int i = 0; i < 8; i++) {
             printf("%d. ", i + 1);
-            switch(i) {
+            switch (i) {
                 case 0: printf("Physical Strength & Knowledge"); break;
                 case 1: printf("Self-Management & Teamwork"); break;
                 case 2: printf("Language & Pronunciation"); break;
@@ -104,7 +104,7 @@ void training() {
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = 0;
 
-        if (strcmp(input, "0") == 0 || strcmp(input, "Q") == 0 || strcmp(input, "q") == 0 || strlen(input) == 0) {
+        if (strcmp(input, "0") == 0 || strcasecmp(input, "q") == 0 || strlen(input) == 0) {
             printf("Returning to Main Menu...\n");
             break;
         }
@@ -114,13 +114,13 @@ void training() {
             if (stage == 1) {
                 printf("  A. Enter Fitness Data\n");
                 printf("  B. View Fitness Data\n");
-                printf("  Enter your choice (A/B) or any other key to go back: ");
+                printf("  Enter your choice (A/B) or any other key to proceed to evaluation: ");
                 fgets(input, sizeof(input), stdin);
                 input[strcspn(input, "\n")] = 0;
 
-                if (strcmp(input, "A") == 0 || strcmp(input, "a") == 0) {
+                if (strcasecmp(input, "A") == 0) {
                     setHealth();
-                } else if (strcmp(input, "B") == 0 || strcmp(input, "b") == 0) {
+                } else if (strcasecmp(input, "B") == 0) {
                     getHealth();
                 } else {
                     trainingStage(stage - 1);
@@ -143,7 +143,13 @@ void trainingStage(int stageIndex) {
     }
 
     if (!isTrainingUnlocked(stageIndex)) {
-        printf("You must pass Stages 1 and 2 before accessing this stage.\n");
+        if (!hasPassed(0) && !hasPassed(1)) {
+            printf("*** You cannot select this option because you have not passed Stages 1 and 2. ***\n");
+        } else if (!hasPassed(0)) {
+            printf("*** You cannot select this option because you have not passed Stage 1. ***\n");
+        } else if (!hasPassed(1)) {
+            printf("*** You cannot select this option because you have not passed Stage 2. ***\n");
+        }
         return;
     }
 
@@ -151,12 +157,12 @@ void trainingStage(int stageIndex) {
     fgets(response, sizeof(response), stdin);
     response[strcspn(response, "\n")] = 0;
 
-    if (strcmp(response, "Y") == 0 || strcmp(response, "y") == 0) {
+    if (strcasecmp(response, "Y") == 0) {
         printf("Did you complete the training and pass the certification? (Y = Pass, N = Fail): ");
         fgets(response, sizeof(response), stdin);
         response[strcspn(response, "\n")] = 0;
 
-        if (strcmp(response, "Y") == 0 || strcmp(response, "y") == 0) {
+        if (strcasecmp(response, "Y") == 0) {
             trainingResults[stageIndex] = 'P';
             printf("Stage %d marked as Passed.\n", stageIndex + 1);
         } else {
@@ -181,7 +187,6 @@ void setHealth() {
     char line[256];
 
     printf("\n--- Enter Fitness Data for Milliways Members ---\n");
-
     for (int i = 0; i < MAX_MEMBERS; i++) {
         printf("Enter 7 comma-separated test values for %s (%s):\n", milliways_members[i][0], milliways_members[i][1]);
         printf("Order: 1-Mile, Sprint, Push-ups, Squats, Arm Strength, Swimming, Weightlifting\n> ");
@@ -189,7 +194,6 @@ void setHealth() {
         line[strcspn(line, "\n")] = 0;
         parseFitnessData(line, i);
     }
-
     printf("All fitness data recorded successfully.\n");
 }
 
@@ -213,7 +217,6 @@ void getHealth() {
     int i, j;
 
     printf("\n--- View Fitness Data ---\n");
-    printf("Options:\n");
     printf("1. View all members' fitness data\n");
     printf("2. View data for a specific member\n");
     printf("3. View specific test for a member\n");
@@ -227,40 +230,31 @@ void getHealth() {
                 printf("%s: %.2f\n", test_names[j], health_scores[i * TESTS + j]);
             }
         }
-    } else if (input[0] == '2') {
+    } else if (input[0] == '2' || input[0] == '3') {
         printf("Enter nickname: ");
         fgets(input, sizeof(input), stdin);
         input[strcspn(input, "\n")] = 0;
 
         for (i = 0; i < MAX_MEMBERS; i++) {
             if (strcmp(input, milliways_members[i][1]) == 0) {
-                printf("\n%s (%s):\n", milliways_members[i][0], milliways_members[i][1]);
-                for (j = 0; j < TESTS; j++) {
-                    printf("%s: %.2f\n", test_names[j], health_scores[i * TESTS + j]);
-                }
-                return;
-            }
-        }
-        printf("Member not found.\n");
-
-    } else if (input[0] == '3') {
-        printf("Enter nickname: ");
-        fgets(input, sizeof(input), stdin);
-        input[strcspn(input, "\n")] = 0;
-
-        for (i = 0; i < MAX_MEMBERS; i++) {
-            if (strcmp(input, milliways_members[i][1]) == 0) {
-                printf("Choose test number (1-7):\n");
-                for (j = 0; j < TESTS; j++) {
-                    printf("%d. %s\n", j + 1, test_names[j]);
-                }
-                fgets(input, sizeof(input), stdin);
-                int testIndex = atoi(input) - 1;
-
-                if (testIndex >= 0 && testIndex < TESTS) {
-                    printf("%s's %s score: %.2f\n", milliways_members[i][1], test_names[testIndex], health_scores[i * TESTS + testIndex]);
+                if (input[0] == '2') {
+                    printf("\n%s (%s):\n", milliways_members[i][0], milliways_members[i][1]);
+                    for (j = 0; j < TESTS; j++) {
+                        printf("%s: %.2f\n", test_names[j], health_scores[i * TESTS + j]);
+                    }
                 } else {
-                    printf("Invalid test number.\n");
+                    printf("Choose test number (1-7):\n");
+                    for (j = 0; j < TESTS; j++) {
+                        printf("%d. %s\n", j + 1, test_names[j]);
+                    }
+                    fgets(input, sizeof(input), stdin);
+                    int testIndex = atoi(input) - 1;
+
+                    if (testIndex >= 0 && testIndex < TESTS) {
+                        printf("%s's %s score: %.2f\n", milliways_members[i][1], test_names[testIndex], health_scores[i * TESTS + testIndex]);
+                    } else {
+                        printf("Invalid test number.\n");
+                    }
                 }
                 return;
             }
