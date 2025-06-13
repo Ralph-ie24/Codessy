@@ -15,69 +15,77 @@ typedef struct {
 
 int main() {
     Judge judges[MAX];
-    char project_name[100] = "K-POP Audition 2025"; // Example project name
-    int total_judges = 5;
-    int selected_members = 3;
+    char project_name[100];
+    int total_judges, selected_members;
+    char view_option;
 
-    // Preloaded judge data
-    strcpy(judges[0].name, "Youngsoo");
-    strcpy(judges[0].gender, "Male");
-    strcpy(judges[0].affiliation, "JYK Studio");
-    strcpy(judges[0].title, "Producer");
-    strcpy(judges[0].specialty, "Music");
-    strcpy(judges[0].email, "youngsu@outlook.com");
-    strcpy(judges[0].phone, "010-1234-5678");
+    // Project details
+    printf("Participating Project: ");
+    fgets(project_name, sizeof(project_name), stdin);
+    project_name[strcspn(project_name, "\n")] = '\0'; // remove newline
 
-    strcpy(judges[1].name, "Jiyoung");
-    strcpy(judges[1].gender, "Female");
-    strcpy(judges[1].affiliation, "DK Studio");
-    strcpy(judges[1].title, "Director");
-    strcpy(judges[1].specialty, "Dance");
-    strcpy(judges[1].email, "jiyounghere@outlook.com");
-    strcpy(judges[1].phone, "010-2345-6789");
+    printf("Total Number of Judges: ");
+    scanf("%d", &total_judges);
+    printf("Number of Selected Members: ");
+    scanf("%d", &selected_members);
+    getchar(); // clear newline from input buffer
 
-    strcpy(judges[2].name, "Minjun");
-    strcpy(judges[2].gender, "Male");
-    strcpy(judges[2].affiliation, "JM Studio");
-    strcpy(judges[2].title, "Director");
-    strcpy(judges[2].specialty, "Vocal");
-    strcpy(judges[2].email, "minjun@outlook.com");
-    strcpy(judges[2].phone, "010-3456-7890");
+    printf("========================================\n");
+    printf("Starting to input information for %d judges\n", total_judges);
+    printf("========================================\n");
 
-    strcpy(judges[3].name, "Hyunwoo");
-    strcpy(judges[3].gender, "Male");
-    strcpy(judges[3].affiliation, "Starlight Entertainment");
-    strcpy(judges[3].title, "Director");
-    strcpy(judges[3].specialty, "Visual");
-    strcpy(judges[3].email, "hyunwoo@outlook.com");
-    strcpy(judges[3].phone, "010-4567-8901");
-
-    strcpy(judges[4].name, "Jiyoung");
-    strcpy(judges[4].gender, "Female");
-    strcpy(judges[4].affiliation, "Association");
-    strcpy(judges[4].title, "Critic");
-    strcpy(judges[4].specialty, "Critic");
-    strcpy(judges[4].email, "jiyoung@outlook.com");
-    strcpy(judges[4].phone, "010-5678-9012");
-
-    // Output
-    printf("\n=======================\n");
-    printf("  Judge Information\n");
-    printf("=======================\n");
-    printf("Project: %s\n", project_name);
-    printf("Total Judges: %d, Selected Members: %d\n", total_judges, selected_members);
-    printf("-----------------------\n");
-
+    // Input judges
     for (int i = 0; i < total_judges; i++) {
-        printf("[Judge %d]\n", i + 1);
-        printf("Name       : %s\n", judges[i].name);
-        printf("Gender     : %s\n", judges[i].gender);
-        printf("Affiliation: %s\n", judges[i].affiliation);
-        printf("Title      : %s\n", judges[i].title);
-        printf("Specialty  : %s\n", judges[i].specialty);
-        printf("Email      : %s\n", judges[i].email);
-        printf("Phone      : %s\n", judges[i].phone);
-        printf("-----------------------------\n");
+        printf("\nJudge %d\n", i + 1);
+        printf("Name: ");
+        fgets(judges[i].name, sizeof(judges[i].name), stdin);
+        judges[i].name[strcspn(judges[i].name, "\n")] = '\0';
+
+        printf("Gender: ");
+        fgets(judges[i].gender, sizeof(judges[i].gender), stdin);
+        judges[i].gender[strcspn(judges[i].gender, "\n")] = '\0';
+
+        printf("Affiliation: ");
+        fgets(judges[i].affiliation, sizeof(judges[i].affiliation), stdin);
+        judges[i].affiliation[strcspn(judges[i].affiliation, "\n")] = '\0';
+
+        printf("Title: ");
+        fgets(judges[i].title, sizeof(judges[i].title), stdin);
+        judges[i].title[strcspn(judges[i].title, "\n")] = '\0';
+
+        printf("Specialty: ");
+        fgets(judges[i].specialty, sizeof(judges[i].specialty), stdin);
+        judges[i].specialty[strcspn(judges[i].specialty, "\n")] = '\0';
+
+        printf("Email: ");
+        fgets(judges[i].email, sizeof(judges[i].email), stdin);
+        judges[i].email[strcspn(judges[i].email, "\n")] = '\0';
+
+        printf("Phone: ");
+        fgets(judges[i].phone, sizeof(judges[i].phone), stdin);
+        judges[i].phone[strcspn(judges[i].phone, "\n")] = '\0';
+    }
+
+    printf("\nDo you want to display the judges' information? (Y/N): ");
+    scanf(" %c", &view_option);
+
+    if (view_option == 'Y' || view_option == 'y') {
+        printf("\n=======================\n");
+        printf("  Judge Information\n");
+        printf("=======================\n");
+        for (int i = 0; i < total_judges; i++) {
+            printf("[Judge %d]\n", i + 1);
+            printf("Name       : %s\n", judges[i].name);
+            printf("Gender     : %s\n", judges[i].gender);
+            printf("Affiliation: %s\n", judges[i].affiliation);
+            printf("Title      : %s\n", judges[i].title);
+            printf("Specialty  : %s\n", judges[i].specialty);
+            printf("Email      : %s\n", judges[i].email);
+            printf("Phone      : %s\n", judges[i].phone);
+            printf("-----------------------------\n");
+        }
+    } else {
+        printf("Program terminated.\n");
     }
 
     return 0;
