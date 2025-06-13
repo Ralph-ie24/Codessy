@@ -44,14 +44,46 @@ void initializeTrainees() {
 }
 
 void inputMentors() {
-    printf("\\n-- Mentor Input (Max 8) --\\n");
+    printf("\n-- Mentor Input (Max 8) --\n");
     for (int i = 0; i < MAX_MENTORS; i++) {
         mentors[i].id = i + 1;
-        printf("Enter mentor name for ID %d: ", mentors[i].id);
-        fgets(mentors[i].name, sizeof(mentors[i].name), stdin);
-        mentors[i].name[strcspn(mentors[i].name, "\\n")] = 0;
+        while (1) {
+            printf("Enter mentor name for ID %d: ", mentors[i].id);
+            fgets(mentors[i].name, sizeof(mentors[i].name), stdin);
+            mentors[i].name[strcspn(mentors[i].name, "\n")] = 0;
+
+            // Input validation
+            if (strlen(mentors[i].name) == 0 || strlen(mentors[i].name) > 29) {
+                printf("Invalid name. Please enter a non-empty name (max 29 chars).\n");
+                continue;
+            }
+
+            int valid = 1;
+            for (int j = 0; j < strlen(mentors[i].name); j++) {
+                if (!isalpha(mentors[i].name[j]) && !isspace(mentors[i].name[j])) {
+                    valid = 0;
+                    break;
+                }
+            }
+            if (!valid) {
+                printf("Name contains invalid characters. Please use letters and spaces only.\n");
+                continue;
+            }
+
+            break; // valid input
+        }
         mentors[i].mentee_number = -1;
         mentor_count++;
+    }
+    printf("✅ Mentor registration completed.\n");
+}
+
+void shuffle(int *array, int n) {
+    for (int i = n - 1; i > 0; i--) {
+        int j = rand() % (i + 1);
+        int temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
     }
 }
 
@@ -59,15 +91,21 @@ void matchMentoring() {
     initializeTrainees();
     inputMentors();
 
-    printf("\\n-- Mentor Matching Results --\\n");
+    int mentor_map[MAX_TRAINEES];
+    for (int i = 0; i < MAX_TRAINEES; i++) mentor_map[i] = i;
+    shuffle(mentor_map, MAX_TRAINEES); // Randomized unique mentor assignment
+
+    printf("\n-- Mentor Matching Results --\n");
     for (int i = 0; i < MAX_TRAINEES; i++) {
-        int match_id = i % MAX_MENTORS;
-        mentors[match_id].mentee_number = i;
-        printf("Trainee %d (ASCII Sum: %d, Ability: %d) matched with Mentor ID %d (%s)\\n",
+        int mentor_id = mentor_map[i];
+        mentors[mentor_id].mentee_number = i;
+
+        printf("Trainee %d (ASCII Sum: %d, Ability: %d) matched with Mentor ID %d (%s)\n",
                i + 1, trainee_list[i][0], trainee_list[i][1],
-               mentors[match_id].id, mentors[match_id].name);
+               mentors[mentor_id].id, mentors[mentor_id].name);
     }
 }
+
 
 void mentoringMenu() {
     char input[10];
