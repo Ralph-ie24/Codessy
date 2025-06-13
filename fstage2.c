@@ -98,14 +98,40 @@ void initializeTrainees() {
 // === Mentoring Functions ===
 
 void inputMentors() {
-    printf("\n-- Mentor Input (Max 8) --\n");
+    printf("\n-- Mentor Input (Max %d) --\n", MAX_MENTORS);
+    mentor_count = 0; // Reset mentor count for clean input
+
     for (int i = 0; i < MAX_MENTORS; i++) {
-        mentors[i].id = i + 1;
-        printf("Enter mentor name for ID %d: ", mentors[i].id);
-        fgets(mentors[i].name, sizeof(mentors[i].name), stdin);
-        mentors[i].name[strcspn(mentors[i].name, "\n")] = 0;
-        mentors[i].mentee_number = -1;
+        char temp[30];
+        printf("Enter mentor name for ID %d (or Q to stop): ", i + 1);
+        fgets(temp, sizeof(temp), stdin);
+        temp[strcspn(temp, "\n")] = 0;
+
+        if (strcmp(temp, "Q") == 0 || strcmp(temp, "q") == 0) break;
+
+        // Trim leading spaces
+        int valid = 0;
+        for (int j = 0; j < strlen(temp); j++) {
+            if (temp[j] != ' ') {
+                valid = 1;
+                break;
+            }
+        }
+
+        if (!valid) {
+            printf("Mentor name cannot be empty. Try again.\n");
+            i--; // Retry current index
+            continue;
+        }
+
+        mentors[mentor_count].id = mentor_count + 1;
+        strcpy(mentors[mentor_count].name, temp);
+        mentors[mentor_count].mentee_number = -1;
         mentor_count++;
+    }
+
+    if (mentor_count < MAX_TRAINEES) {
+        printf("\nError: At least %d mentors are required for matching.\n", MAX_TRAINEES);
     }
 }
 
@@ -113,13 +139,17 @@ void matchMentoring() {
     initializeTrainees();
     inputMentors();
 
+    if (mentor_count < MAX_TRAINEES) {
+        printf("Not enough mentors to proceed with 1:1 matching.\n");
+        return;
+    }
+
     printf("\n-- Mentor Matching Results --\n");
     for (int i = 0; i < MAX_TRAINEES; i++) {
-        int match_id = i % MAX_MENTORS;
-        mentors[match_id].mentee_number = i;
+        mentors[i].mentee_number = i;
         printf("Trainee %d (ASCII Sum: %d, Ability: %d) matched with Mentor ID %d (%s)\n",
                i + 1, trainee_list[i][0], trainee_list[i][1],
-               mentors[match_id].id, mentors[match_id].name);
+               mentors[i].id, mentors[i].name);
     }
 }
 
