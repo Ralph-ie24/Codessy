@@ -8,8 +8,6 @@
 #define MAX_TRAUMA 10
 #define MAX_COUNSELING 30
 
-// --- Trainee & Mentor structures ---
-
 typedef struct {
     int id;
     char name[30];
@@ -23,12 +21,11 @@ char *trainees[MAX_TRAINEES][2] = {
     {"Liam Wilson", "Aladdin"},
 };
 
-int trainee_list[MAX_TRAINEES][2]; // [0] = nickname ASCII sum, [1] = ability score
+int trainee_list[MAX_TRAINEES][2];
 Mentor mentors[MAX_MENTORS];
 int mentor_count = 0;
 
-// --- Trauma & Counseling structures ---
-
+// Trauma & Counseling structures
 typedef struct {
     char nickname[10];
     int age;
@@ -59,8 +56,7 @@ const Question questions[5] = {
     {5, "What kind of support do you think is necessary to overcome this trauma?"}
 };
 
-// --- Functions for mentoring system ---
-
+// Helper functions
 int parseIntMember(char *nickname) {
     int sum = 0;
     for (int i = 0; i < strlen(nickname); i++) {
@@ -70,7 +66,7 @@ int parseIntMember(char *nickname) {
 }
 
 int getRandomAbility() {
-    return rand() % 901 + 100; // Random value between 100 and 1000
+    return rand() % 901 + 100;
 }
 
 void initializeTrainees() {
@@ -82,14 +78,26 @@ void initializeTrainees() {
 }
 
 void inputMentors() {
-    printf("\n-- Mentor Input (Max 8) --\n");
+    printf("\n-- Mentor Input (Max %d, enter Q to stop early) --\n", MAX_MENTORS);
+    mentor_count = 0;
     for (int i = 0; i < MAX_MENTORS; i++) {
-        mentors[i].id = i + 1;
-        printf("Enter mentor name for ID %d: ", mentors[i].id);
-        fgets(mentors[i].name, sizeof(mentors[i].name), stdin);
-        mentors[i].name[strcspn(mentors[i].name, "\n")] = 0;
-        mentors[i].mentee_number = -1;
+        char input[30];
+        printf("Enter mentor name for ID %d (or Q to quit): ", i + 1);
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        if (strcmp(input, "Q") == 0 || strcmp(input, "q") == 0)
+            break;
+
+        strncpy(mentors[mentor_count].name, input, sizeof(mentors[mentor_count].name));
+        mentors[mentor_count].id = mentor_count + 1;
+        mentors[mentor_count].mentee_number = -1;
         mentor_count++;
+    }
+
+    if (mentor_count < MAX_TRAINEES) {
+        printf("Not enough mentors to match all trainees. At least %d required.\n", MAX_TRAINEES);
+        mentor_count = 0;
     }
 }
 
@@ -97,24 +105,36 @@ void matchMentoring() {
     initializeTrainees();
     inputMentors();
 
+    if (mentor_count < MAX_TRAINEES) {
+        printf("Mentoring aborted due to insufficient mentors.\n");
+        return;
+    }
+
+    int used[MAX_MENTORS] = {0};
     printf("\n-- Mentor Matching Results --\n");
+
     for (int i = 0; i < MAX_TRAINEES; i++) {
-        int match_id = i % MAX_MENTORS;
+        int match_id;
+        do {
+            match_id = rand() % mentor_count;
+        } while (used[match_id]);
+        used[match_id] = 1;
+
         mentors[match_id].mentee_number = i;
-        printf("Trainee %d (ASCII Sum: %d, Ability: %d) matched with Mentor ID %d (%s)\n",
-               i + 1, trainee_list[i][0], trainee_list[i][1],
+        printf("Trainee %d (%s, ASCII Sum: %d, Ability: %d) matched with Mentor ID %d (%s)\n",
+               i + 1, trainees[i][1], trainee_list[i][0], trainee_list[i][1],
                mentors[match_id].id, mentors[match_id].name);
     }
 }
 
-// --- Functions for trauma management ---
-
+// Trauma Functions
 void inputTrauma() {
     char nickname[10], trauma[200];
     while (1) {
         printf("\nEnter member nickname (or Q to quit): ");
         fgets(nickname, sizeof(nickname), stdin);
         nickname[strcspn(nickname, "\n")] = 0;
+
         if (strcmp(nickname, "Q") == 0 || strcmp(nickname, "q") == 0) break;
 
         int found = 0;
@@ -124,16 +144,15 @@ void inputTrauma() {
                 printf("Enter trauma description for %s: ", nickname);
                 fgets(trauma, sizeof(trauma), stdin);
                 trauma[strcspn(trauma, "\n")] = 0;
-                strcpy(traumas[trauma_count].nickname, nickname);
-                traumas[trauma_count].age = (rand() % 10) + 18; // Random age 18-27
-                strcpy(traumas[trauma_count].trauma, trauma);
+                strncpy(traumas[trauma_count].nickname, nickname, sizeof(traumas[trauma_count].nickname));
+                traumas[trauma_count].age = rand() % 10 + 18;
+                strncpy(traumas[trauma_count].trauma, trauma, sizeof(traumas[trauma_count].trauma));
                 trauma_count++;
+                printf("Trauma data saved for %s.\n", nickname);
                 break;
             }
         }
-        if (found)
-            printf("Trauma data saved for %s.\n", nickname);
-        else
+        if (!found)
             printf("Nickname not found. Please try again.\n");
     }
 }
@@ -161,18 +180,19 @@ void counselingSession() {
 
     Trauma selected = traumas[choice - 1];
     int q_indices[3];
+
     for (int i = 0; i < 3; i++) {
-        int unique = 0;
-        while (!unique) {
-            q_indices[i] = rand() % 5;
+        int unique;
+        do {
             unique = 1;
+            q_indices[i] = rand() % 5;
             for (int j = 0; j < i; j++) {
                 if (q_indices[i] == q_indices[j]) {
                     unique = 0;
                     break;
                 }
             }
-        }
+        } while (!unique);
     }
 
     for (int i = 0; i < 3; i++) {
@@ -184,9 +204,9 @@ void counselingSession() {
             if (strlen(response) == 0 || strlen(response) > 100) {
                 printf("Response must be between 1 and 100 characters. Try again.\n");
             } else {
-                strcpy(counseling_sessions[counseling_count].nickname, selected.nickname);
-                strcpy(counseling_sessions[counseling_count].question, questions[q_indices[i]].question);
-                strcpy(counseling_sessions[counseling_count].response, response);
+                strncpy(counseling_sessions[counseling_count].nickname, selected.nickname, sizeof(counseling_sessions[counseling_count].nickname));
+                strncpy(counseling_sessions[counseling_count].question, questions[q_indices[i]].question, sizeof(counseling_sessions[counseling_count].question));
+                strncpy(counseling_sessions[counseling_count].response, response, sizeof(counseling_sessions[counseling_count].response));
                 counseling_count++;
                 break;
             }
@@ -197,6 +217,11 @@ void counselingSession() {
 }
 
 void viewCounselingData() {
+    if (trauma_count == 0) {
+        printf("No counseling data available.\n");
+        return;
+    }
+
     printf("\n--- Completed Counseling Sessions ---\n");
     for (int i = 0; i < trauma_count; i++) {
         printf("%d. %s\n", i + 1, traumas[i].nickname);
@@ -244,8 +269,6 @@ void overcomeTrauma() {
     }
 }
 
-// --- Combined Menu ---
-
 void mentoringMenu() {
     char input[10];
     while (1) {
@@ -267,7 +290,7 @@ void mentoringMenu() {
 }
 
 int main() {
-    srand(time(NULL)); // Seed random number generator
+    srand(time(NULL));
     mentoringMenu();
     return 0;
 }
